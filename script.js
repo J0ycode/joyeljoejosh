@@ -528,6 +528,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const h1 = document.querySelector('.glitch');
         if (!h1) return;
 
+        // Ultra-Lite Mobile: Disable Smoke
+        if (window.innerWidth < 768) {
+            h1.classList.add('glitch'); // Just show glitch text immediately
+
+            // Show description immediately
+            const val = document.querySelector('.hero-desc');
+            if (val) {
+                val.classList.add('show');
+                val.style.opacity = '1';
+            }
+            return; // Stop here, no smoke particles
+        }
+
         const text = h1.getAttribute('data-text') || h1.innerText;
         h1.innerHTML = '';
         h1.classList.remove('glitch'); // Pause glitch
