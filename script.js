@@ -207,9 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const isMobile = width < 768;
 
             if (isMobile) {
-                // Mobile Optimization: Fewer waves (2 layers)
-                waves.push(new Wave(height * 0.15, 35, 1500, 0.01, 'rgba(255, 255, 255, 0.02)'));
-                waves.push(new Wave(height * 0.2, 50, 1300, 0.014, 'rgba(255, 255, 255, 0.015)'));
+                // Mobile Optimization: DISABLE WAVES COMPLETELY
+                // "Simple BG" requested to fix lag.
+                // Canvas remains empty, showing CSS background.
+                return;
             } else {
                 // Desktop: Full quality (4 layers)
                 // "Stay slightly above the page" -> High start positions (10-25%)
@@ -225,6 +226,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const animate = () => {
+            // Stop animation on mobile to save battery/performance
+            if (width < 768) {
+                ctx.clearRect(0, 0, width, height); // clear and stop
+                requestAnimationFrame(animate); // Keep loop alive but do nothing? Or just return?
+                // Better to keep checking in case user resizes back to desktop, 
+                // but for now, low-cost loop is fine.
+                return;
+            }
+
             ctx.clearRect(0, 0, width, height);
             const scrollY = window.scrollY || 0;
 
@@ -235,11 +245,33 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(animate);
         };
 
-        window.addEventListener('resize', resize); // Logic moved to resize()
+        window.addEventListener('resize', () => {
+            resize(); // Updates width
+            if (width >= 768 && waves.length === 0) {
+                createWaves(); // Re-init if moving from mobile to desktop
+                // animate(); // Restart loop if needed (animate loop handles the check too)
+            }
+        });
+
+        // Loop starter
+        // We call animate() once. It will self-terminate or pause if width < 768 (handled inside)
+        // actually if we return, the loop dies. 
+        // Let's change animate to always requestFrame but do nothing on mobile.
+
+        const safeAnimate = () => {
+            if (width >= 768) {
+                ctx.clearRect(0, 0, width, height);
+                const scrollY = window.scrollY || 0;
+                waves.forEach(wave => wave.draw(ctx, scrollY));
+            } else {
+                ctx.clearRect(0, 0, width, height); // Ensure clean canvas
+            }
+            requestAnimationFrame(safeAnimate);
+        }
 
         resize();
-        // createWaves called inside resize
-        animate();
+        createWaves();
+        safeAnimate();
     };
 
     initWaves();
