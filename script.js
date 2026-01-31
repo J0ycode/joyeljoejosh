@@ -142,12 +142,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         let width, height, docHeight, maxScroll;
         let waves = [];
+        let previousWidth = window.innerWidth;
 
         const resize = () => {
+            const newWidth = window.innerWidth;
+            // Mobile Optimization: Only resize if width changes (ignores vertical address bar resize)
+            if (newWidth === previousWidth && width) return;
+
+            previousWidth = newWidth;
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             docHeight = document.documentElement.scrollHeight;
             maxScroll = docHeight - height;
+            createWaves(); // Re-create waves on valid resize
         };
 
         class Wave {
@@ -194,15 +201,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const createWaves = () => {
             waves = [];
-            // "Stay slightly above the page" -> High start positions (10-25%)
-            // Reduced Amplitude and Increased Length for closer to "less circular" naturally flowing feel
-            // Speed maintained
-            waves.push(new Wave(height * 0.15, 35, 1500, 0.01, 'rgba(255, 255, 255, 0.02)'));
-            waves.push(new Wave(height * 0.2, 50, 1300, 0.014, 'rgba(255, 255, 255, 0.015)'));
-            waves.push(new Wave(height * 0.25, 30, 1800, 0.008, 'rgba(255, 255, 255, 0.01)'));
+            const isMobile = width < 768;
 
-            // A slightly lower layer
-            waves.push(new Wave(height * 0.1, 55, 2200, 0.006, 'rgba(255, 255, 255, 0.01)'));
+            if (isMobile) {
+                // Mobile Optimization: Fewer waves (2 layers)
+                waves.push(new Wave(height * 0.15, 35, 1500, 0.01, 'rgba(255, 255, 255, 0.02)'));
+                waves.push(new Wave(height * 0.2, 50, 1300, 0.014, 'rgba(255, 255, 255, 0.015)'));
+            } else {
+                // Desktop: Full quality (4 layers)
+                // "Stay slightly above the page" -> High start positions (10-25%)
+                // Reduced Amplitude and Increased Length for closer to "less circular" naturally flowing feel
+                // Speed maintained
+                waves.push(new Wave(height * 0.15, 35, 1500, 0.01, 'rgba(255, 255, 255, 0.02)'));
+                waves.push(new Wave(height * 0.2, 50, 1300, 0.014, 'rgba(255, 255, 255, 0.015)'));
+                waves.push(new Wave(height * 0.25, 30, 1800, 0.008, 'rgba(255, 255, 255, 0.01)'));
+
+                // A slightly lower layer
+                waves.push(new Wave(height * 0.1, 55, 2200, 0.006, 'rgba(255, 255, 255, 0.01)'));
+            }
         };
 
         const animate = () => {
@@ -216,13 +232,10 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(animate);
         };
 
-        window.addEventListener('resize', () => {
-            resize();
-            createWaves(); // Re-center waves
-        });
+        window.addEventListener('resize', resize); // Logic moved to resize()
 
         resize();
-        createWaves();
+        // createWaves called inside resize
         animate();
     };
 
@@ -422,50 +435,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
     });
 
-    // Magnetic Button Effect
-    const magneticButtons = document.querySelectorAll('.btn, .social-icon');
+    // Magnetic Button Effect & 3D Tilt (Desktop Only)
+    // Optimization: Skip these heavy listeners on touch devices
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
 
-    magneticButtons.forEach(btn => {
-        btn.addEventListener('mousemove', (e) => {
-            const rect = btn.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
+        const magneticButtons = document.querySelectorAll('.btn, .social-icon');
+        magneticButtons.forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
 
-            // magnetic pull strength
-            btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.1)`;
+                // magnetic pull strength
+                btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.1)`;
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translate(0px, 0px) scale(1)';
+            });
         });
 
-        btn.addEventListener('mouseleave', () => {
-            btn.style.transform = 'translate(0px, 0px) scale(1)';
+        // 3D Holographic Card Tilt Effect
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = ((y - centerY) / centerY) * -10; // Max 10deg rotation
+                const rotateY = ((x - centerX) / centerX) * 10;
+
+                // Apply 3D rotation, keeping the scale pop
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05) translateY(-10px)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+            });
         });
-    });
-
-    // 3D Holographic Card Tilt Effect
-    const cards = document.querySelectorAll('.glass-card');
-
-    cards.forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-
-            const rotateX = ((y - centerY) / centerY) * -10; // Max 10deg rotation
-            const rotateY = ((x - centerX) / centerX) * 10;
-
-            // Apply 3D rotation, keeping the scale pop
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05) translateY(-10px)`;
-        });
-
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-        });
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-        });
-    });
+    }
 
     // Footer Text Wave Animation
     const footerText = document.querySelector('.footer-content p');
