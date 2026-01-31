@@ -385,11 +385,17 @@ a {
     margin-bottom: 1rem;
 }
 
-.glitch {
+#hero h1 {
     font-size: 4rem;
     position: relative;
     color: #fff;
     margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.glitch {
+    /* Glitch specific styles can remain or be empty if defined elsewhere */
+    position: relative;
 }
 
 .typewriter {
@@ -411,6 +417,38 @@ a {
     50% {
         border-color: transparent;
     }
+}
+
+/* Smoke Collapse Animation */
+.smoke-span {
+    display: inline-block;
+    opacity: 0;
+    filter: blur(20px);
+    transform: translate(var(--x), var(--y)) rotate(var(--r));
+    animation: smokeGather 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes smokeGather {
+    100% {
+        opacity: 1;
+        filter: blur(0);
+        transform: translate(0, 0) rotate(0);
+        text-shadow: none;
+        /* Glow fades out */
+    }
+}
+
+/* Description Entry Animation */
+.hero-desc {
+    opacity: 0;
+    /* Hidden initially */
+    /* Removed transform for pure fade-in */
+    transition: opacity 2s ease-in-out;
+}
+
+.hero-desc.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .hero-desc {
@@ -616,7 +654,6 @@ section {
     justify-content: center;
     gap: 0.5rem;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-    overflow: hidden;
     min-height: 160px;
     position: relative;
     text-align: center;
@@ -647,16 +684,7 @@ section {
     margin: 0;
 }
 
-.skill-logo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transition: opacity 0.3s ease;
-}
+
 
 .skill-card h3 {
     font-size: 1.1rem;
@@ -678,29 +706,17 @@ section {
 
 /* Hover: Scale Logic */
 .skill-card:hover .icon-container {
-    transform: translateY(-25px) scale(1.1);
-}
-
-.skill-card:hover .icon-container i {
-    opacity: 0;
-}
-
-.skill-card:hover .skill-logo {
-    opacity: 1;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+    transform: translateY(-10px) scale(1.1);
 }
 
 /* Hover: Standard Icon (Fallback) - Only direct children */
-.skill-card:hover>i {
-    transform: translateY(-25px) scale(1.05);
-    color: var(--skill-color, var(--primary-color));
-
+.skill-card:hover i {
+    transform: translate(-50%, -50%) translateY(-10px) scale(1.2);
+    color: #E5E4E2;
     text-shadow:
-        0 0 10px var(--skill-color, var(--primary-color)),
-        0 0 20px var(--skill-color, var(--primary-color)),
-        0 0 40px var(--skill-color, var(--primary-color));
-
-    filter: brightness(1.1) saturate(1.5);
+        0 0 10px #E5E4E2,
+        0 0 20px #E5E4E2;
+    filter: brightness(1.2);
 }
 
 .skill-card:hover h3 {

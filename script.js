@@ -123,7 +123,110 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     init();
+    init();
     animateParticles();
+
+    // Background Wave Animation
+    const initWaves = () => {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'wave-canvas';
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.zIndex = '-2'; // Behind particles
+        canvas.style.pointerEvents = 'none';
+        document.body.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        let width, height, docHeight, maxScroll;
+        let waves = [];
+
+        const resize = () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            docHeight = document.documentElement.scrollHeight;
+            maxScroll = docHeight - height;
+        };
+
+        class Wave {
+            constructor(y, amplitude, length, speed, color) {
+                this.y = y; // Initial Y (start position)
+                this.amplitude = amplitude;
+                this.length = length;
+                this.speed = speed;
+                this.color = color;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            draw(context, scrollY) {
+                context.beginPath();
+                context.fillStyle = this.color;
+
+                // Use cached maxScroll to prevent reflow
+                const scrollPercent = maxScroll > 0 ? Math.min(scrollY / maxScroll, 1) : 0;
+
+                // Interpolate from Start Y to Bottom (winHeight = height)
+                // "Join": Reach the absolute bottom to merge with footer
+                const targetY = height;
+                const currentY = this.y + (targetY - this.y) * scrollPercent;
+
+                // Draw filled shape from TOP (0,0) down to the wave
+                context.moveTo(0, 0);
+                context.lineTo(0, currentY);
+
+                // Draw sine wave across width
+                // Optimization: Increased step from 10 to 30 for better performance
+                for (let x = 0; x <= width; x += 30) {
+                    const y = currentY + Math.sin(x * (Math.PI * 2 / this.length) + this.phase) * this.amplitude;
+                    context.lineTo(x, y);
+                }
+
+                context.lineTo(width, 0); // Back up to top-right
+                context.closePath();
+                context.fill();
+
+                // Slow continuous animation
+                this.phase += this.speed;
+            }
+        }
+
+        const createWaves = () => {
+            waves = [];
+            // "Stay slightly above the page" -> High start positions (10-25%)
+            // Reduced Amplitude and Increased Length for closer to "less circular" naturally flowing feel
+            // Speed maintained
+            waves.push(new Wave(height * 0.15, 35, 1500, 0.01, 'rgba(255, 255, 255, 0.02)'));
+            waves.push(new Wave(height * 0.2, 50, 1300, 0.014, 'rgba(255, 255, 255, 0.015)'));
+            waves.push(new Wave(height * 0.25, 30, 1800, 0.008, 'rgba(255, 255, 255, 0.01)'));
+
+            // A slightly lower layer
+            waves.push(new Wave(height * 0.1, 55, 2200, 0.006, 'rgba(255, 255, 255, 0.01)'));
+        };
+
+        const animate = () => {
+            ctx.clearRect(0, 0, width, height);
+            const scrollY = window.scrollY || 0;
+
+            waves.forEach(wave => {
+                wave.draw(ctx, scrollY);
+            });
+
+            requestAnimationFrame(animate);
+        };
+
+        window.addEventListener('resize', () => {
+            resize();
+            createWaves(); // Re-center waves
+        });
+
+        resize();
+        createWaves();
+        animate();
+    };
+
+    initWaves();
 
     // Typewriter
     const typingText = document.querySelector('.typing-text');
@@ -371,5 +474,59 @@ document.addEventListener('DOMContentLoaded', () => {
             if (char === ' ') return '<span>&nbsp;</span>';
             return `<span style="animation-delay: ${index * 100}ms">${char}</span>`;
         }).join('');
+    }
+
+    // Smoke Collapse Animation Logic
+    const initSmokeAnimation = () => {
+        const h1 = document.querySelector('.glitch');
+        if (!h1) return;
+
+        const text = h1.getAttribute('data-text') || h1.innerText;
+        h1.innerHTML = '';
+        h1.classList.remove('glitch'); // Pause glitch
+
+        text.split('').forEach((char, index) => {
+            const span = document.createElement('span');
+            span.textContent = char === ' ' ? '\u00A0' : char;
+            span.classList.add('smoke-span');
+
+            // Random positions for "here and there"
+            const x = (Math.random() - 0.5) * 300; // -150px to 150px
+            const y = (Math.random() - 0.5) * 300; // -150px to 150px
+            const r = (Math.random() - 0.5) * 360; // Random rotation
+
+            span.style.setProperty('--x', `${x}px`);
+            span.style.setProperty('--y', `${y}px`);
+            span.style.setProperty('--r', `${r}deg`);
+            span.style.animationDelay = `${index * 50}ms`; // Staggered arrival
+
+            h1.appendChild(span);
+        });
+
+        // Show Description earlier (while name is forming)
+        setTimeout(() => {
+            const val = document.querySelector('.hero-desc');
+            if (val) val.classList.add('show');
+        }, 1000); // 1s delay (during smoke)
+
+        // Restore Glitch Effect after animation
+        setTimeout(() => {
+            h1.classList.add('glitch');
+            // Keeping the spans prevents the "jump" in layout
+            // h1.innerHTML = text; 
+        }, 3500); // 1.5s animation + delays
+    };
+
+    // Trigger Smoke Animation after Preloader
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        // Wait for preloader fade out logic
+        const originalFadeOut = window.getComputedStyle(preloader).transitionDuration;
+        // We hook into the existing load listener logic roughly
+        setTimeout(() => {
+            initSmokeAnimation();
+        }, 1600); // 1500ms is the preloader delay in existing code + 100ms buffer
+    } else {
+        initSmokeAnimation();
     }
 });
