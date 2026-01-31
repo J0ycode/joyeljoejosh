@@ -184,8 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 context.lineTo(0, currentY);
 
                 // Draw sine wave across width
-                // Optimization: Increased step from 10 to 30 for better performance
-                for (let x = 0; x <= width; x += 30) {
+                // Optimization: Low-poly on mobile for performance
+                // step = 30 (Desktop), step = 80 (Mobile)
+                const step = width < 768 ? 80 : 30;
+
+                for (let x = 0; x <= width; x += step) {
                     const y = currentY + Math.sin(x * (Math.PI * 2 / this.length) + this.phase) * this.amplitude;
                     context.lineTo(x, y);
                 }
