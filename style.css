@@ -454,6 +454,8 @@ a {
 }
 
 .hero-desc {
+    margin-top: 1.5rem;
+    /* Added spacing */
     margin-bottom: 2rem;
     font-size: 1.1rem;
     color: var(--text-color);
@@ -609,6 +611,35 @@ section {
     overflow: hidden;
 }
 
+.project-img.icon-mode {
+    height: 180px;
+    background: rgba(0, 0, 0, 0.3);
+    /* Darker bg for icons */
+    /* overflow: hidden; Removed for icon spread */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.project-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    /* Gradient Text for Icon */
+    background: linear-gradient(135deg, var(--primary-color), #fff);
+    background-clip: text;
+    /* Standard property */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
+    transition: transform 0.5s ease;
+}
+
+.project-card:hover .project-icon {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.6));
+}
+
 .img-placeholder {
     width: 100%;
     height: 100%;
@@ -714,10 +745,12 @@ section {
 /* Hover: Standard Icon (Fallback) - Only direct children */
 .skill-card:hover i {
     transform: translate(-50%, -50%) translateY(-10px) scale(1.2);
-    color: #E5E4E2;
+    /* Golden Glow Update */
+    color: #ffd700;
     text-shadow:
-        0 0 10px #E5E4E2,
-        0 0 20px #E5E4E2;
+        0 0 10px rgba(212, 175, 55, 0.8),
+        0 0 20px rgba(212, 175, 55, 0.6),
+        0 0 30px rgba(212, 175, 55, 0.4);
     filter: brightness(1.2);
 }
 
@@ -982,8 +1015,9 @@ footer p {
         -webkit-backdrop-filter: none !important;
         background: #0a0a0a !important;
         /* Solid dark */
-        box-shadow: none !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        /* Subtle Gold Glow for Mobile */
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.15) !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
         border-image: none !important;
         /* Remove gradient borders */
     }
@@ -996,6 +1030,27 @@ footer p {
     span {
         text-shadow: none !important;
         filter: none !important;
+    }
+
+    /* Font Size Adjustments for Mobile */
+    #hero h1 {
+        font-size: 2.5rem;
+        /* Smaller H1 */
+    }
+
+    .typewriter {
+        font-size: 1.2rem;
+        /* Smaller typing text */
+        height: auto;
+        /* Dynamic height */
+        min-height: 2rem;
+        margin-bottom: 2rem;
+        /* More space below */
+    }
+
+    .hero-desc {
+        margin-top: 1rem;
+        font-size: 1rem;
     }
 
     /* 4. Simple Scroll Reveal (Fade Only, No Movement) */
